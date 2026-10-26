@@ -40,7 +40,7 @@ if [[ "$DEBAND" == true ]]; then
 fi
 
 av1an -i "$INPUT" \
-  "${EXTRA_ARGS[@]}" \
+  ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} \
   -e svt-av1 \
   -v " --preset 4 --crf 24 --tune 0 --enable-restoration 1 --film-grain 0 " \
   -c mkvmerge \
