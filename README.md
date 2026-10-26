@@ -37,8 +37,9 @@ mkvmerge --version
 
 ```text
 encoding/
-├── animation.sh       # Script for 2D/3D animation & CGI content
-├── .gitignore         # Excludes /out, /logs, and media files (*.mkv, *.mp4, *.y4m)
+├── animation/
+│   └── animation.sh   # Script for 2D/3D animation & CGI content
+├── .gitignore         # Excludes /out, /logs, and media files (*.mkv, *.mp4, *.png)
 ├── logs/              # (Ignored) Encoding logs and metrics
 └── out/               # (Ignored) Completed encode outputs
 ```
@@ -47,12 +48,12 @@ encoding/
 
 ## Usage
 
-### 1. Animation & Clean CGI (`animation.sh`)
+### 1. Animation & Clean CGI (`animation/animation.sh`)
 
-Tuned for flat colors, line-art integrity, and ringing reduction. Synthetic film grain is disabled to prevent speckle artifacts on clean vectors.
+Tuned for flat colors, line-art integrity, and ringing reduction. Synthetic film grain is disabled to prevent speckle artifacts on clean vectors. An optional debanding filter (`gradfun`) can be engaged with `-d`.
 
 ```bash
-./animation.sh -i <input_clip> -o <output_clip>
+./animation/animation.sh -i <input_clip> -o <output_clip> [-d]
 ```
 
 **Parameters applied:**
@@ -61,6 +62,7 @@ Tuned for flat colors, line-art integrity, and ringing reduction. Synthetic film
 - **Preset:** `--preset 4` (High compression efficiency / detailed motion search)
 - **Tuning:** `--tune 0` (Visual Quality / human psycho-visual perception)
 - **Filters:** `--enable-restoration 1` (Wiener + SGR filters for line sharpness)
+- **Deband Option (`-d`):** `-vf gradfun=strength=1.5:radius=16`
 - **Grain:** `--film-grain 0` (Disabled)
 - **Workers:** `-w 2` (2 scene workers running concurrently)
 
