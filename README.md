@@ -58,11 +58,11 @@ Tuned for flat colors, line-art integrity, and ringing reduction. Synthetic film
 
 **Parameters applied:**
 - **Encoder:** `svt-av1`
-- **Quality:** `--crf 24`
+- **Quality:** `--crf 24` (auto drops to `--crf 19` with `-d`)
 - **Preset:** `--preset 4` (High compression efficiency / detailed motion search)
 - **Tuning:** `--tune 0` (Visual Quality / human psycho-visual perception)
 - **Filters:** `--enable-restoration 1` (Wiener + SGR filters for line sharpness)
-- **Deband Option (`-d`):** `-vf gradfun=strength=1.5:radius=16`
+- **Deband Mode (`-d`):** `-vf gradfun=strength=1.2:radius=16`, `--aq-mode 0`, and `--enable-qm 1`
 - **Grain:** `--film-grain 0` (Disabled)
 - **Workers:** `-w 2` (2 scene workers running concurrently)
 

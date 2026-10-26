@@ -40,13 +40,19 @@ if [[ "$DEBAND" == true ]]; then
   echo "==> Deband mode enabled (gradfun dither, CRF 19, Variance AQ)"
   EXTRA_ARGS+=("-f" "-vf gradfun=strength=1.2:radius=16")
   CRF=19
-  EXTRA_SVT_PARAMS="--aq-mode 2 "
+  EXTRA_SVT_PARAMS="--aq-mode 0 --enable-qm 1 "
 fi
 
 av1an -i "$INPUT" \
   ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} \
   -e svt-av1 \
-  -v " --preset 4 --crf ${CRF} --tune 0 ${EXTRA_SVT_PARAMS}--enable-restoration 1 --film-grain 0 " \
+  -v " --preset 4 --crf ${CRF} --tune 0 ${EXTRA_SVT_PARAMS} --enable-restoration 1 --film-grain 0 " \
   -c mkvmerge \
   -w 2 \
   -o "$OUTPUT"
+
+av1an -i sample_animation.mkv \
+      -f "-vf gradfun=strength=1.2:radius=16" \
+      -e svt-av1 \
+      -v " --preset 4 --crf 19 --tune 0 --aq-mode 0 --enable-restoration 1 --enable-qm 1 --film-grain 0 " \
+      -c mkvmerge -w 2 -o test_smooth_edge.mkv

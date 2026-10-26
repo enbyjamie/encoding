@@ -11,7 +11,7 @@ Targeted profile for 2D/3D animation, anime, and digital CGI content. Tuned for 
 ### Options
 * `-i <path>`: Source video file (Required).
 * `-o <path>`: Output video file path (Required).
-* `-d`: Enable pre-encode debanding (`gradfun=strength=1.5:radius=16`). Use this when source masters exhibit visible color banding in gradients (e.g. skies, snow, fog).
+* `-d`: Enable debanding mode (`gradfun=strength=1.2:radius=16`, drops to `--crf 19`, disables delta-QP with `--aq-mode 0`, and applies `--enable-qm 1`). Use this when source masters exhibit visible color banding in gradients (e.g. skies, snow, fog).
 * `-h`: Display help.
 
 ---
@@ -24,7 +24,7 @@ Targeted profile for 2D/3D animation, anime, and digital CGI content. Tuned for 
 * **Tuning:** `--tune 0` (Visual Quality).
 * **Restoration:** `--enable-restoration 1` (Wiener + SGR in-loop filters to prevent line-art ringing).
 * **Film Grain:** `--film-grain 0` (Disabled to avoid synthetic noise on clean vector art).
-* **Deband Filter (`-d`):** Injects `-vf gradfun=strength=1.2:radius=16`, sets `--crf 19`, and applies `--aq-mode 2` to preserve gradient dither without macroblock collapse.
+* **Deband Mode (`-d`):** Injects `-vf gradfun=strength=1.2:radius=16`, sets `--crf 19`, sets `--aq-mode 0` to prevent macroblock boundary starvation on silhouettes, and sets `--enable-qm 1` (quantization matrices) to eliminate high-contrast line ringing.
 
 ---
 
