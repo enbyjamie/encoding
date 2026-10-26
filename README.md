@@ -7,7 +7,7 @@ A modular video encoding workflow built on top of [Av1an](https://github.com/rus
 This repository houses automation scripts and parameter profiles tailored for specific content types (animation, grainy film masters, standard live action), implementing guidelines from the [JET Encoding Guide](https://jaded-encoding-thaumaturgy.github.io/JET-guide/).
 
 ### Project Roadmap
-- [x] Portable Av1an invocation scripts for macOS/Linux.
+- [x] Optimised animation encoding.
 - [ ] Automated batch queue runner.
 - [ ] Metric logging and inspection (VMAF, SSIMULACRA2).
 - [ ] HDR10 / Dolby Vision metadata passthrough and tonemapping pipeline.
