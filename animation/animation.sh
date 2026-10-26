@@ -8,7 +8,7 @@ Usage: $0 -i <input_clip> -o <output_clip> [options]
 Options:
   -i <path>       Input video file (Required)
   -o <path>       Output video file (Required)
-  -d              Enable debanding filter (gradfun)
+  -d              Enable debanding mode (gradfun dither + CRF 19 + aq-mode 2)
   -h              Show this help message
 EOF
   exit 1
@@ -33,16 +33,20 @@ if [[ -z "$INPUT" || -z "$OUTPUT" ]]; then
 fi
 
 EXTRA_ARGS=()
+CRF=24
+EXTRA_SVT_PARAMS=""
 
 if [[ "$DEBAND" == true ]]; then
-  echo "==> Deband filter enabled (gradfun=strength=1.5:radius=16)"
-  EXTRA_ARGS+=("-f" "-vf gradfun=strength=1.5:radius=16")
+  echo "==> Deband mode enabled (gradfun dither, CRF 19, Variance AQ)"
+  EXTRA_ARGS+=("-f" "-vf gradfun=strength=1.2:radius=16")
+  CRF=19
+  EXTRA_SVT_PARAMS="--aq-mode 2 "
 fi
 
 av1an -i "$INPUT" \
   ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} \
   -e svt-av1 \
-  -v " --preset 4 --crf 24 --tune 0 --enable-restoration 1 --film-grain 0 " \
+  -v " --preset 4 --crf ${CRF} --tune 0 ${EXTRA_SVT_PARAMS}--enable-restoration 1 --film-grain 0 " \
   -c mkvmerge \
   -w 2 \
   -o "$OUTPUT"
