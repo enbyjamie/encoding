@@ -3,12 +3,20 @@ set -euo pipefail
 
 usage() {
   cat << EOF
-Usage: $0 -i <input_clip> -o <output_clip> [options]
+Usage: $0 -i <input_clip> -o <output_clip> [-m <mode>]
+
+Modes:
+  1   Baseline (No debanding, CRF 24) [~1.0MB / 10s]
+      Fastest encode. Clean baseline, but gradients can show slight banding.
+  2   Experimental Deband (gradfun + CRF 19 + aq-mode 0 + qm) [~1.7MB / 10s]
+      Smooths gradients aggressively, but can soften fine line edges.
+  3   Best Quality (Direct SVT-AV1, CRF 14, aq-mode 2) [~2.4MB / 10s] (Default)
+      Pin-sharp line edges, fine 4x4 sub-partitions, smooth 10-bit internal gradient.
 
 Options:
   -i <path>       Input video file (Required)
   -o <path>       Output video file (Required)
-  -d              Enable debanding mode (gradfun dither + CRF 19 + aq-mode 2)
+  -m <1|2|3>      Quality/deband preset mode (Default: 3)
   -h              Show this help message
 EOF
   exit 1
@@ -16,13 +24,13 @@ EOF
 
 INPUT=""
 OUTPUT=""
-DEBAND=false
+MODE=3
 
-while getopts "i:o:dh" opt; do
+while getopts "i:o:m:h" opt; do
   case "$opt" in
     i) INPUT="$OPTARG" ;;
     o) OUTPUT="$OPTARG" ;;
-    d) DEBAND=true ;;
+    m) MODE="$OPTARG" ;;
     h) usage ;;
     *) usage ;;
   esac
@@ -33,26 +41,32 @@ if [[ -z "$INPUT" || -z "$OUTPUT" ]]; then
 fi
 
 EXTRA_ARGS=()
-CRF=24
-EXTRA_SVT_PARAMS=""
+SVT_PARAMS=""
 
-if [[ "$DEBAND" == true ]]; then
-  echo "==> Deband mode enabled (gradfun dither, CRF 19, Variance AQ)"
-  EXTRA_ARGS+=("-f" "-vf gradfun=strength=1.2:radius=16")
-  CRF=19
-  EXTRA_SVT_PARAMS="--aq-mode 0 --enable-qm 1 "
-fi
+case "$MODE" in
+  1)
+    echo "==> [Mode 1] Baseline (No debanding, CRF 24)"
+    SVT_PARAMS="--preset 4 --crf 24 --tune 0 --enable-restoration 1 --film-grain 0"
+    ;;
+  2)
+    echo "==> [Mode 2] Experimental Deband (gradfun dither, CRF 19, aq-mode 0, qm 1)"
+    EXTRA_ARGS+=("-f" "-vf gradfun=strength=1.2:radius=16")
+    SVT_PARAMS="--preset 4 --crf 19 --tune 0 --aq-mode 0 --enable-restoration 1 --enable-qm 1 --film-grain 0"
+    ;;
+  3)
+    echo "==> [Mode 3] Best Quality (CRF 14, aq-mode 2, full edge resolution)"
+    SVT_PARAMS="--preset 4 --crf 14 --tune 0 --aq-mode 2 --enable-restoration 1 --film-grain 0"
+    ;;
+  *)
+    echo "Error: Invalid mode '$MODE'. Choose 1, 2, or 3." >&2
+    usage
+    ;;
+esac
 
 av1an -i "$INPUT" \
   ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} \
   -e svt-av1 \
-  -v " --preset 4 --crf ${CRF} --tune 0 ${EXTRA_SVT_PARAMS} --enable-restoration 1 --film-grain 0 " \
+  -v " ${SVT_PARAMS} " \
   -c mkvmerge \
   -w 2 \
   -o "$OUTPUT"
-
-av1an -i sample_animation.mkv \
-      -f "-vf gradfun=strength=1.2:radius=16" \
-      -e svt-av1 \
-      -v " --preset 4 --crf 19 --tune 0 --aq-mode 0 --enable-restoration 1 --enable-qm 1 --film-grain 0 " \
-      -c mkvmerge -w 2 -o test_smooth_edge.mkv

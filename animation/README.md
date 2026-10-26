@@ -5,26 +5,24 @@ Targeted profile for 2D/3D animation, anime, and digital CGI content. Tuned for 
 ## Script Usage
 
 ```bash
-./animation.sh -i <input_clip> -o <output_clip> [-d]
+./animation.sh -i <input_clip> -o <output_clip> [-m <1|2|3>]
 ```
 
 ### Options
 * `-i <path>`: Source video file (Required).
 * `-o <path>`: Output video file path (Required).
-* `-d`: Enable debanding mode (`gradfun=strength=1.2:radius=16`, drops to `--crf 19`, disables delta-QP with `--aq-mode 0`, and applies `--enable-qm 1`). Use this when source masters exhibit visible color banding in gradients (e.g. skies, snow, fog).
+* `-m <mode>`: Quality & deband profile preset (Default: `3`).
 * `-h`: Display help.
 
 ---
 
-## Encoder Profile Details
+## Preset Modes
 
-* **Encoder:** `svt-av1` via `av1an` chunking.
-* **CRF:** `24` by default. Automatically shifts to `19` when `-d` (debanding) is active to prevent dither quantization/blocking.
-* **Preset:** `4` (Optimized search partitions and motion vector estimation).
-* **Tuning:** `--tune 0` (Visual Quality).
-* **Restoration:** `--enable-restoration 1` (Wiener + SGR in-loop filters to prevent line-art ringing).
-* **Film Grain:** `--film-grain 0` (Disabled to avoid synthetic noise on clean vector art).
-* **Deband Mode (`-d`):** Injects `-vf gradfun=strength=1.2:radius=16`, sets `--crf 19`, sets `--aq-mode 0` to prevent macroblock boundary starvation on silhouettes, and sets `--enable-qm 1` (quantization matrices) to eliminate high-contrast line ringing.
+| Mode | Name | Target Output Size | SVT-AV1 & Pre-filter Parameters | Characteristics |
+| :---: | :--- | :--- | :--- | :--- |
+| **1** | **Baseline (No Deband)** | **~1.0 MB** *(from 51MB source)* | `--crf 24`, `--tune 0`, `--enable-restoration 1` | Fastest encode. Clean lines, but flat gradients (snow/skies) may show source banding. |
+| **2** | **Experimental Deband** | **~1.7 MB** *(from 51MB source)* | `-vf gradfun=strength=1.2:radius=16`<br>`--crf 19`, `--aq-mode 0`, `--enable-qm 1` | Smooths harsh gradient banding, but introduces edge softening and corner-stepping. |
+| **3** | **Best Quality (Default)** | **~2.4 MB** *(from 51MB source)* | `--crf 14`, `--aq-mode 2`, `--enable-restoration 1` | **Recommended.** Pin-sharp line-art, 4x4 sub-block partitions, smooth internal 10-bit gradient interpolation without pre-filter blurring. |
 
 ---
 
@@ -36,8 +34,4 @@ Extracts identical frames from both source and encoded clips to compare compress
 ../get_frames.sh -i <source.mkv> -o <encoded.mkv> [-t <timestamp>]
 ```
 
-### Options
-* `-i <path>`: Source video file (Required).
-* `-o <path>`: Encoded video file (Required).
-* `-t <timestamp>`: Extraction timestamp (Default: `00:00:02`). Supports formats like `2s`, `00:00:05`, etc.
 * Outputs `./source_frame.png` and `./encoded_frame.png` for side-by-side inspection.

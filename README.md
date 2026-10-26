@@ -50,21 +50,16 @@ encoding/
 
 ### 1. Animation & Clean CGI (`animation/animation.sh`)
 
-Tuned for flat colors, line-art integrity, and ringing reduction. Synthetic film grain is disabled to prevent speckle artifacts on clean vectors. An optional debanding filter (`gradfun`) can be engaged with `-d`.
+Tuned for flat colors, line-art integrity, and ringing reduction. Features three selectable preset modes via `-m`:
 
 ```bash
-./animation/animation.sh -i <input_clip> -o <output_clip> [-d]
+./animation/animation.sh -i <input_clip> -o <output_clip> [-m <1|2|3>]
 ```
 
-**Parameters applied:**
-- **Encoder:** `svt-av1`
-- **Quality:** `--crf 24` (auto drops to `--crf 19` with `-d`)
-- **Preset:** `--preset 4` (High compression efficiency / detailed motion search)
-- **Tuning:** `--tune 0` (Visual Quality / human psycho-visual perception)
-- **Filters:** `--enable-restoration 1` (Wiener + SGR filters for line sharpness)
-- **Deband Mode (`-d`):** `-vf gradfun=strength=1.2:radius=16`, `--aq-mode 0`, and `--enable-qm 1`
-- **Grain:** `--film-grain 0` (Disabled)
-- **Workers:** `-w 2` (2 scene workers running concurrently)
+**Preset Modes:**
+- **Mode 1 (Baseline / No Deband):** `--crf 24`, fast compression (`~1.0MB / 10s`).
+- **Mode 2 (Experimental Deband):** `-vf gradfun=strength=1.2:radius=16`, `--crf 19`, `--aq-mode 0`, `--enable-qm 1` (`~1.7MB / 10s`).
+- **Mode 3 (Best Quality - Default):** `--crf 14`, `--aq-mode 2`, `--enable-restoration 1`, full 4x4 sub-partitioning (`~2.4MB / 10s`). Maintains pin-sharp edges and 10-bit smooth gradients without pre-filter blurring.
 
 ---
 
